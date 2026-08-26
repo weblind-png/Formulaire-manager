@@ -3,11 +3,12 @@ import { generateGuideline } from '@/lib/anthropic';
 import { redirect } from 'next/navigation';
 import type { Mission } from '@/lib/types';
 
-export default async function GuidelinePage({ params }: { params: { id: string } }) {
+export default async function GuidelinePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const { data: mission } = await supabaseAdmin
     .from('missions')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (!mission) return <p>Mission introuvable.</p>;
@@ -15,7 +16,7 @@ export default async function GuidelinePage({ params }: { params: { id: string }
   // Double vérification côté serveur : même en accédant directement à cette URL,
   // rien ne s'affiche sans que le webhook Stripe ait confirmé le paiement.
   if (mission.status !== 'paid' && mission.status !== 'generated') {
-    redirect(`/mission/${params.id}/summary`);
+    redirect(`/mission/${id}/summary`);
   }
 
   let guideline = mission.guideline_json;
