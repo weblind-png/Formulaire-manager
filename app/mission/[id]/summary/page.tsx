@@ -2,18 +2,19 @@ import { supabaseAdmin } from '@/lib/supabase';
 import PayButton from '@/components/PayButton';
 import { redirect } from 'next/navigation';
 
-export default async function SummaryPage({ params }: { params: { id: string } }) {
+export default async function SummaryPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const { data: mission } = await supabaseAdmin
     .from('missions')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (!mission) return <p>Mission introuvable.</p>;
 
   // Déjà payée : on ne repasse pas par le paywall
   if (mission.status === 'paid' || mission.status === 'generated') {
-    redirect(`/mission/${params.id}/guideline`);
+    redirect(`/mission/${id}/guideline`);
   }
 
   const phaseCount = Math.min(5, Math.max(2, Math.round(mission.mission_duration_days / 30)));
