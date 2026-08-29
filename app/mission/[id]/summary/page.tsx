@@ -21,29 +21,35 @@ export default async function SummaryPage({ params }: { params: Promise<{ id: st
   const placeholderPhases = Array.from({ length: phaseCount }, (_, i) => `Phase ${i + 1}`);
 
   return (
-    <main className="page">
-      <h1>Votre synthèse de mission</h1>
-      <section className="company-summary">
-        <h3>{mission.company_url}</h3>
-        <p>{mission.company_summary}</p>
+    <>
+      <section className="hero">
+        <div className="hero-inner">
+          <h1>Votre synthèse de mission</h1>
+        </div>
       </section>
+      <main className="page-body">
+        <section className="company-summary">
+          <h3>{mission.company_url}</h3>
+          <p>{mission.company_summary}</p>
+        </section>
 
-      <section className="teaser">
-        <h2>Votre plan {mission.target_function} sur {mission.mission_duration_days} jours</h2>
-        <ul className="locked-phases">
-          {placeholderPhases.map((label) => (
-            <li key={label} className="locked">
-              🔒 {label} — objectifs, actions et livrables détaillés
-            </li>
-          ))}
-        </ul>
-        <p className="paywall-copy">
-          Débloquez le document complet : plan step-by-step, actions concrètes
-          (audit, consultation interne, rapport, directive, projet) et livrables
-          par phase, formaté et téléchargeable.
-        </p>
-        <PayButton missionId={mission.id} />
-      </section>
-    </main>
+        <section className="teaser">
+          <h2>Votre plan {mission.target_function} sur {mission.mission_duration_days} jours</h2>
+          <ul className="locked-phases">
+            {placeholderPhases.map((label) => (
+              <li key={label} className="locked">
+                🔒 {label} — objectifs, actions et livrables détaillés
+              </li>
+            ))}
+          </ul>
+          <p className="paywall-copy">
+            Débloquez le document complet : plan step-by-step, actions concrètes
+            (audit, consultation interne, rapport, directive, projet) et livrables
+            par phase, formaté et téléchargeable.
+          </p>
+          <PayButton missionId={mission.id} />
+        </section>
+      </main>
+    </>
   );
 }
