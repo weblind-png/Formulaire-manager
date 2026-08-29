@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import type { Guideline } from '@/lib/types';
+import DonutChart from './DonutChart';
 
 type ProgressMap = Record<string, boolean>;
 
@@ -64,34 +65,22 @@ export default function InteractiveGuideline({
   }
 
   const statusLabel = gap >= 5 ? 'En avance' : gap <= -5 ? 'En retard' : 'Dans les temps';
-  const statusClass = gap >= 5 ? 'status-ahead' : gap <= -5 ? 'status-behind' : 'status-ontrack';
 
   return (
     <div>
       <div className="progress-summary">
-        <div className="progress-block">
-          <div className="progress-label">
-            <span>Avancement des tâches</span>
-            <strong>{completionPct}%</strong>
-          </div>
-          <div className="progress-bar-track">
-            <div className="progress-bar-fill" style={{ width: `${completionPct}%` }} />
-          </div>
-          <p className="progress-detail">{checkedCount} / {totalItems} éléments validés</p>
-        </div>
-
-        <div className="progress-block">
-          <div className="progress-label">
-            <span>Délai de mission écoulé</span>
-            <strong>{elapsedPct}%</strong>
-          </div>
-          <div className="progress-bar-track">
-            <div className="progress-bar-fill progress-bar-time" style={{ width: `${elapsedPct}%` }} />
-          </div>
-          <p className={`progress-detail status-tag ${statusClass}`}>
-            {statusLabel} {gap !== 0 && `(${gap > 0 ? '+' : ''}${gap} pts)`}
-          </p>
-        </div>
+        <DonutChart
+          percentage={completionPct}
+          color="var(--navy)"
+          label="Avancement des tâches"
+          sublabel={`${checkedCount} / ${totalItems} éléments validés`}
+        />
+        <DonutChart
+          percentage={elapsedPct}
+          color="var(--gold)"
+          label="Délai de mission écoulé"
+          sublabel={`${statusLabel}${gap !== 0 ? ` (${gap > 0 ? '+' : ''}${gap} pts)` : ''}`}
+        />
       </div>
 
       {guideline.phases.map((phase, pIndex) => {
