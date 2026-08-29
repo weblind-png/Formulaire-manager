@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { generateGuideline } from '@/lib/ai';
 import { redirect } from 'next/navigation';
 import type { Mission } from '@/lib/types';
+import InteractiveGuideline from '@/components/InteractiveGuideline';
 
 export default async function GuidelinePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -33,20 +34,13 @@ export default async function GuidelinePage({ params }: { params: Promise<{ id: 
       <h1>{guideline.mission_title}</h1>
       <p className="summary">{guideline.summary}</p>
 
-      {guideline.phases.map((phase: any, i: number) => (
-        <section key={i} className="phase-card">
-          <h2>{phase.period_label} — {phase.title}</h2>
-
-          <h4>Objectifs</h4>
-          <ul>{phase.objectives.map((o: string, j: number) => <li key={j}>{o}</li>)}</ul>
-
-          <h4>Actions</h4>
-          <ul>{phase.actions.map((a: string, j: number) => <li key={j}>{a}</li>)}</ul>
-
-          <h4>Livrables</h4>
-          <ul>{phase.deliverables.map((d: string, j: number) => <li key={j}>{d}</li>)}</ul>
-        </section>
-      ))}
+      <InteractiveGuideline
+        missionId={mission.id}
+        guideline={guideline}
+        initialProgress={mission.progress_json ?? {}}
+        missionDurationDays={mission.mission_duration_days}
+        startedAt={mission.paid_at ?? mission.created_at}
+      />
 
       <a className="download-link" href={`/api/pdf/${mission.id}`}>
         Télécharger le document formaté (PDF)
