@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { summarizeCompany } from '@/lib/anthropic';
+import { summarizeCompany } from '@/lib/ai';
 
 // Création d'une mission (étape 1 du formulaire)
 export async function POST(req: NextRequest) {
