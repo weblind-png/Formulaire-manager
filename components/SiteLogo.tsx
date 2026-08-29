@@ -3,11 +3,8 @@
 export default function SiteLogo() {
   return (
     <img
-      src="/logo.png"
-      alt="Logo"
-      onError={(e) => {
-        (e.target as HTMLImageElement).style.display = 'none';
-      }}
+      src="https://res.cloudinary.com/dlo1bbmlf/image/upload/v1777481790/logiIP_fzrayp.png"
+      alt="Iterium Partners"
     />
   );
 }
