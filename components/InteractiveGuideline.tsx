@@ -23,7 +23,6 @@ export default function InteractiveGuideline({
 }: Props) {
   const [progress, setProgress] = useState<ProgressMap>(initialProgress ?? {});
 
-  // Construit la liste complète des items cochables, chacun avec une clé stable
   const items = useMemo(() => {
     const list: { key: string; label: string; phaseIndex: number; type: string }[] = [];
     guideline.phases.forEach((phase, pIndex) => {
@@ -38,7 +37,6 @@ export default function InteractiveGuideline({
   const checkedCount = items.filter((it) => progress[it.key]).length;
   const completionPct = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
 
-  // % du délai de mission déjà écoulé
   const elapsedPct = useMemo(() => {
     const start = new Date(startedAt).getTime();
     const now = Date.now();
@@ -47,20 +45,18 @@ export default function InteractiveGuideline({
     return Math.min(100, Math.round((elapsedMs / totalMs) * 100));
   }, [startedAt, missionDurationDays]);
 
-  const gap = completionPct - elapsedPct; // positif = en avance, négatif = en retard
+  const gap = completionPct - elapsedPct;
 
-  // Ratio de "respect du délai" : où en est l'avancement des tâches par rapport
-  // à ce qui serait attendu au temps écoulé. 100% = parfaitement dans les clous.
-  // Réagit donc directement aux cases cochées, contrairement au temps écoulé seul.
-  const respectPct = elapsedPct === 0
-    ? (completionPct > 0 ? 100 : 0)
-    : Math.min(100, Math.round((completionPct / elapsedPct) * 100));
+  // Le plancher de 1 point évite un saut brutal à 100% quand la mission vient
+  // tout juste de démarrer (elapsedPct proche de 0) — le ratio reste continu
+  // et suit fidèlement chaque case cochée/décochée.
+  const respectPct = Math.min(100, Math.round((completionPct / Math.max(elapsedPct, 1)) * 100));
 
   const respectColor = respectPct >= 90 ? '#1f7a3f' : respectPct >= 60 ? 'var(--gold)' : '#b3261e';
 
   async function toggleItem(key: string) {
     const next = !progress[key];
-    setProgress((p) => ({ ...p, [key]: next })); // optimiste
+    setProgress((p) => ({ ...p, [key]: next }));
 
     try {
       await fetch('/api/mission/progress', {
@@ -69,7 +65,7 @@ export default function InteractiveGuideline({
         body: JSON.stringify({ missionId, itemKey: key, checked: next }),
       });
     } catch {
-      setProgress((p) => ({ ...p, [key]: !next })); // rollback si échec
+      setProgress((p) => ({ ...p, [key]: !next }));
     }
   }
 
