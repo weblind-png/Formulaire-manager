@@ -12,11 +12,15 @@ const MODEL = 'openai/gpt-oss-120b';
  * `rawContent` = texte déjà extrait du site par votre étape de scraping.
  */
 export async function summarizeCompany(companyUrl: string, rawContent: string): Promise<string> {
+  if (!rawContent || rawContent.trim().length < 50) {
+    return `Synthèse non disponible : le contenu du site ${companyUrl} n'a pas pu être récupéré automatiquement (site protégé contre le scraping, contenu généré en JavaScript, ou site inaccessible). Le manager peut renseigner manuellement le contexte de l'entreprise.`;
+  }
+
   const completion = await groq.chat.completions.create({
     model: MODEL,
     messages: [{
       role: 'user',
-      content: `Voici le contenu extrait du site ${companyUrl} :\n\n${rawContent}\n\nRédige une synthèse factuelle en 6-8 lignes maximum à destination d'un manager de transition qui doit prendre ses fonctions rapidement dans cette entreprise : activité, taille approximative, positionnement marché, signaux notables (croissance, tensions, actualité récente). Pas de style commercial, uniquement des faits utiles.`
+      content: `Voici le contenu extrait du site ${companyUrl} :\n\n${rawContent}\n\nRédige une synthèse factuelle en 6-8 lignes maximum à destination d'un manager de transition qui doit prendre ses fonctions rapidement dans cette entreprise : activité, taille approximative, positionnement marché, signaux notables (croissance, tensions, actualité récente). Base-toi UNIQUEMENT sur le contenu fourni ci-dessus, sans jamais indiquer que tu ne peux pas accéder à un lien — le contenu t'a déjà été fourni en texte. Pas de style commercial, uniquement des faits utiles.`
     }],
     max_tokens: 600,
   });
