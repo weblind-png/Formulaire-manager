@@ -49,6 +49,15 @@ export default function InteractiveGuideline({
 
   const gap = completionPct - elapsedPct; // positif = en avance, négatif = en retard
 
+  // Ratio de "respect du délai" : où en est l'avancement des tâches par rapport
+  // à ce qui serait attendu au temps écoulé. 100% = parfaitement dans les clous.
+  // Réagit donc directement aux cases cochées, contrairement au temps écoulé seul.
+  const respectPct = elapsedPct === 0
+    ? (completionPct > 0 ? 100 : 0)
+    : Math.min(100, Math.round((completionPct / elapsedPct) * 100));
+
+  const respectColor = respectPct >= 90 ? '#1f7a3f' : respectPct >= 60 ? 'var(--gold)' : '#b3261e';
+
   async function toggleItem(key: string) {
     const next = !progress[key];
     setProgress((p) => ({ ...p, [key]: next })); // optimiste
@@ -76,10 +85,10 @@ export default function InteractiveGuideline({
           sublabel={`${checkedCount} / ${totalItems} éléments validés`}
         />
         <DonutChart
-          percentage={elapsedPct}
-          color="var(--gold)"
-          label="Délai de mission écoulé"
-          sublabel={`${statusLabel}${gap !== 0 ? ` (${gap > 0 ? '+' : ''}${gap} pts)` : ''}`}
+          percentage={respectPct}
+          color={respectColor}
+          label="Respect du délai"
+          sublabel={`${statusLabel}${gap !== 0 ? ` (${gap > 0 ? '+' : ''}${gap} pts)` : ''} · ${elapsedPct}% du délai écoulé`}
         />
       </div>
 
