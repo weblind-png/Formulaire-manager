@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase';
-import { generateGuideline } from '@/lib/anthropic';
+import { generateGuideline } from '@/lib/ai';
 import { redirect } from 'next/navigation';
 import type { Mission } from '@/lib/types';
 
