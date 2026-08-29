@@ -18,6 +18,7 @@ export default function MultiStepForm() {
   const [step, setStep] = useState(1);
   const [missionId, setMissionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     company_url: '',
@@ -36,16 +37,28 @@ export default function MultiStepForm() {
   // Étape 1 : crée la mission dès que l'URL + le premier bloc sont saisis
   async function submitStepOne() {
     setLoading(true);
-    const res = await fetch('/api/mission', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-    const data = await res.json();
-    setLoading(false);
-    if (res.ok) {
+    setError(null);
+    try {
+      const res = await fetch('/api/mission', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        let message = text;
+        try { message = JSON.parse(text).error ?? text; } catch {}
+        throw new Error(message || `Erreur serveur (${res.status})`);
+      }
+
+      const data = await res.json();
       setMissionId(data.id);
       setStep(2);
+    } catch (e: any) {
+      setError(e.message || 'Une erreur est survenue. Réessayez.');
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -53,23 +66,37 @@ export default function MultiStepForm() {
   async function submitStepTwo() {
     if (!missionId) return;
     setLoading(true);
-    await fetch('/api/mission', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: missionId,
-        entry_context: form.entry_context,
-        sponsor_mandate: form.sponsor_mandate,
-        team_size: form.team_size ? Number(form.team_size) : null,
-        known_constraints: form.known_constraints,
-      }),
-    });
-    setLoading(false);
-    router.push(`/mission/${missionId}/summary`);
+    setError(null);
+    try {
+      const res = await fetch('/api/mission', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: missionId,
+          entry_context: form.entry_context,
+          sponsor_mandate: form.sponsor_mandate,
+          team_size: form.team_size ? Number(form.team_size) : null,
+          known_constraints: form.known_constraints,
+        }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        let message = text;
+        try { message = JSON.parse(text).error ?? text; } catch {}
+        throw new Error(message || `Erreur serveur (${res.status})`);
+      }
+
+      router.push(`/mission/${missionId}/summary`);
+    } catch (e: any) {
+      setError(e.message || 'Une erreur est survenue. Réessayez.');
+      setLoading(false);
+    }
   }
 
   return (
     <div className="form-card">
+      {error && <p className="form-error">⚠️ {error}</p>}
       {step === 1 && (
         <div className="form-step">
           <h2>Votre mission en un coup d'œil</h2>
