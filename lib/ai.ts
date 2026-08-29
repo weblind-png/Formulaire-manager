@@ -1,11 +1,11 @@
-
 import Groq from 'groq-sdk';
 import type { Mission, Guideline } from './types';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
 
 // Modèle gratuit performant sur Groq pour du texte structuré
-const MODEL = 'llama-3.3-70b-versatile';
+// (llama-3.3-70b-versatile a été retiré du catalogue Groq le 17/06/2026)
+const MODEL = 'openai/gpt-oss-120b';
 
 /**
  * Résume le site de l'entreprise cible (étape 1 du formulaire).
