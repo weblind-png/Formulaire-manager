@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { summarizeCompany } from '@/lib/ai';
+import { scrapeCompanySite } from '@/lib/scraper';
 
 // Création d'une mission (étape 1 du formulaire)
 export async function POST(req: NextRequest) {
@@ -11,8 +12,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Champs obligatoires manquants' }, { status: 400 });
   }
 
-  // TODO: remplacer par votre étape de scraping réelle (Firecrawl, etc.)
-  const rawContent = `Contenu extrait de ${company_url}`;
+  const rawContent = await scrapeCompanySite(company_url);
   const company_summary = await summarizeCompany(company_url, rawContent);
 
   const { data, error } = await supabaseAdmin
