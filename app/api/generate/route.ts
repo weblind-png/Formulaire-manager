@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { generateGuideline } from '@/lib/anthropic';
+import { generateGuideline } from '@/lib/ai';
 import type { Mission } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
