@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import AdminGenerateButton from '@/components/AdminGenerateButton';
+import InteractiveGuideline from '@/components/InteractiveGuideline';
 
 export default async function AdminMissionPage({
   params,
@@ -59,17 +60,13 @@ export default async function AdminMissionPage({
           <h2 style={{ marginTop: 32 }}>{guideline.mission_title}</h2>
           <p className="summary">{guideline.summary}</p>
 
-          {guideline.phases.map((phase: any, i: number) => (
-            <section key={i} className="phase-card">
-              <h2>{phase.period_label} — {phase.title}</h2>
-              <h4>Objectifs</h4>
-              <ul>{phase.objectives.map((o: string, j: number) => <li key={j}>{o}</li>)}</ul>
-              <h4>Actions</h4>
-              <ul>{phase.actions.map((a: string, j: number) => <li key={j}>{a}</li>)}</ul>
-              <h4>Livrables</h4>
-              <ul>{phase.deliverables.map((d: string, j: number) => <li key={j}>{d}</li>)}</ul>
-            </section>
-          ))}
+          <InteractiveGuideline
+            missionId={mission.id}
+            guideline={guideline}
+            initialProgress={mission.progress_json ?? {}}
+            missionDurationDays={mission.mission_duration_days}
+            startedAt={mission.paid_at ?? mission.created_at}
+          />
         </>
       ) : (
         <p style={{ marginTop: 20 }}>Pas encore générée — cliquez sur le bouton ci-dessus.</p>
