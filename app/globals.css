@@ -41,7 +41,7 @@ body {
 }
 
 .hero {
-  background: linear-gradient(90deg, rgba(7,26,51,0.92) 0%, rgba(7,26,51,0.75) 55%, rgba(7,26,51,0.55) 100%), url('/hero-bg.png');
+  background: linear-gradient(90deg, rgba(7,26,51,0.92) 0%, rgba(7,26,51,0.75) 55%, rgba(7,26,51,0.55) 100%), url('https://res.cloudinary.com/dlo1bbmlf/image/upload/v1784651189/baniere_Iterium_PARTNERS_tle2ua.png');
   background-size: cover;
   background-position: center;
   padding: 72px 24px;
