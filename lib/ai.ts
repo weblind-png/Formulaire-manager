@@ -7,10 +7,6 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
 // (llama-3.3-70b-versatile a été retiré du catalogue Groq le 17/06/2026)
 const MODEL = 'openai/gpt-oss-120b';
 
-/**
- * Résume le site de l'entreprise cible (étape 1 du formulaire).
- * `rawContent` = texte déjà extrait du site par votre étape de scraping.
- */
 export async function summarizeCompany(companyUrl: string, rawContent: string): Promise<string> {
   if (!rawContent || rawContent.trim().length < 50) {
     return `Synthèse non disponible : le contenu du site ${companyUrl} n'a pas pu être récupéré automatiquement (site protégé contre le scraping, contenu généré en JavaScript, ou site inaccessible). Le manager peut renseigner manuellement le contexte de l'entreprise.`;
@@ -27,9 +23,6 @@ export async function summarizeCompany(companyUrl: string, rawContent: string): 
   return completion.choices[0]?.message?.content ?? '';
 }
 
-/**
- * Génère la guideline complète (plan step-by-step) une fois la mission payée.
- */
 export async function generateGuideline(mission: Mission): Promise<Guideline> {
   const systemPrompts: Record<string, string> = {
     DSI: "Tu es un manager de transition senior spécialisé en direction des systèmes d'information (DSI/CIO). Tu conçois des plans d'action réalistes, orientés terrain, pour des missions de transition.",
@@ -81,5 +74,23 @@ Réponds UNIQUEMENT en JSON valide, sans texte autour, au format suivant :
   });
 
   const text = completion.choices[0]?.message?.content ?? '{}';
-  return JSON.parse(text) as Guideline;
+  const raw = JSON.parse(text);
+
+  // Normalisation défensive : l'IA (sans schéma strict imposé) peut parfois
+  // omettre un tableau sur une phase — on garantit une structure toujours valide.
+  const normalized: Guideline = {
+    mission_title: raw.mission_title ?? `Guideline ${mission.target_function}`,
+    summary: raw.summary ?? '',
+    phases: Array.isArray(raw.phases)
+      ? raw.phases.map((p: any) => ({
+          title: p.title ?? 'Phase',
+          period_label: p.period_label ?? '',
+          objectives: Array.isArray(p.objectives) ? p.objectives : [],
+          actions: Array.isArray(p.actions) ? p.actions : [],
+          deliverables: Array.isArray(p.deliverables) ? p.deliverables : [],
+        }))
+      : [],
+  };
+
+  return normalized;
 }
