@@ -11,7 +11,7 @@ interface Props {
   guideline: Guideline;
   initialProgress: ProgressMap;
   missionDurationDays: number;
-  startedAt: string; // paid_at ou created_at — date de départ de la mission
+  startedAt: string;
 }
 
 export default function InteractiveGuideline({
@@ -25,10 +25,10 @@ export default function InteractiveGuideline({
 
   const items = useMemo(() => {
     const list: { key: string; label: string; phaseIndex: number; type: string }[] = [];
-    guideline.phases.forEach((phase, pIndex) => {
-      phase.objectives.forEach((o, i) => list.push({ key: `p${pIndex}-o${i}`, label: o, phaseIndex: pIndex, type: 'Objectif' }));
-      phase.actions.forEach((a, i) => list.push({ key: `p${pIndex}-a${i}`, label: a, phaseIndex: pIndex, type: 'Action' }));
-      phase.deliverables.forEach((d, i) => list.push({ key: `p${pIndex}-d${i}`, label: d, phaseIndex: pIndex, type: 'Livrable' }));
+    (guideline.phases ?? []).forEach((phase, pIndex) => {
+      (phase.objectives ?? []).forEach((o, i) => list.push({ key: `p${pIndex}-o${i}`, label: o, phaseIndex: pIndex, type: 'Objectif' }));
+      (phase.actions ?? []).forEach((a, i) => list.push({ key: `p${pIndex}-a${i}`, label: a, phaseIndex: pIndex, type: 'Action' }));
+      (phase.deliverables ?? []).forEach((d, i) => list.push({ key: `p${pIndex}-d${i}`, label: d, phaseIndex: pIndex, type: 'Livrable' }));
     });
     return list;
   }, [guideline]);
@@ -47,9 +47,6 @@ export default function InteractiveGuideline({
 
   const gap = completionPct - elapsedPct;
 
-  // Le plancher de 1 point évite un saut brutal à 100% quand la mission vient
-  // tout juste de démarrer (elapsedPct proche de 0) — le ratio reste continu
-  // et suit fidèlement chaque case cochée/décochée.
   const respectPct = Math.min(100, Math.round((completionPct / Math.max(elapsedPct, 1)) * 100));
 
   const respectColor = respectPct >= 90 ? '#1f7a3f' : respectPct >= 60 ? 'var(--gold)' : '#b3261e';
@@ -88,7 +85,7 @@ export default function InteractiveGuideline({
         />
       </div>
 
-      {guideline.phases.map((phase, pIndex) => {
+      {(guideline.phases ?? []).map((phase, pIndex) => {
         const phaseItems = items.filter((it) => it.phaseIndex === pIndex);
         const phaseChecked = phaseItems.filter((it) => progress[it.key]).length;
 
