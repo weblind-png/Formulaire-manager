@@ -138,6 +138,15 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .paywall-copy { color: var(--muted); margin: 16px 0; }
 
+.axes-block {
+  background: #f4f6f8;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.axes-block .checklist { margin-bottom: 0; }
+
 .form-error {
   background: #fdecea;
   color: #b3261e;
@@ -248,6 +257,15 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   font-weight: 600;
   margin-top: -8px;
   margin-bottom: 16px;
+}
+
+.phase-header {
+  margin-bottom: 12px;
+}
+.phase-header .donut-wrap {
+  border: none;
+  padding: 0;
+  background: transparent;
 }
 
 .checklist { list-style: none; padding: 0; margin: 0 0 16px; }
