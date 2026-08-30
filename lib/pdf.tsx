@@ -12,7 +12,7 @@ function PdfDonut({ percentage, color, size = 72 }: { percentage: number; color:
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const pct = Math.max(0, Math.min(100, percentage));
-  const dashoffset = circumference * (1 - pct / 100);
+  const arcLength = circumference * (pct / 100);
   const center = size / 2;
 
   return (
@@ -26,8 +26,7 @@ function PdfDonut({ percentage, color, size = 72 }: { percentage: number; color:
           stroke={color}
           strokeWidth={strokeWidth}
           fill="none"
-          strokeDasharray={`${circumference} ${circumference}`}
-          strokeDashoffset={dashoffset}
+          strokeDasharray={`${arcLength} ${circumference - arcLength}`}
           strokeLinecap="round"
           transform={`rotate(-90, ${center}, ${center})`}
         />
