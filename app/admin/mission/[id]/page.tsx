@@ -55,6 +55,12 @@ export default async function AdminMissionPage({
 
       <AdminGenerateButton missionId={mission.id} adminKey={key!} />
 
+      {guideline && (
+        <p style={{ marginTop: 12 }}>
+          <a href={`/api/pdf/${mission.id}?key=${key}`}>📄 Télécharger le PDF</a>
+        </p>
+      )}
+
       {guideline ? (
         <>
           <h2 style={{ marginTop: 32 }}>{guideline.mission_title}</h2>
