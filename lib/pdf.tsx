@@ -12,8 +12,8 @@ function PdfDonut({ percentage, color, size = 72 }: { percentage: number; color:
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const pct = Math.max(0, Math.min(100, percentage));
-  const arcLength = circumference * (pct / 100);
-  const center = size / 2;
+const arcLength = Math.max(0.01, Math.min(circumference - 0.01, circumference * (pct / 100)));
+const center = size / 2;
 
   return (
     <View style={{ width: size, height: size, position: 'relative' }}>
