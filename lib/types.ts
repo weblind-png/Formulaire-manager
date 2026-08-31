@@ -11,13 +11,16 @@ export interface Mission {
   sponsor_mandate?: string;
   team_size?: number;
   known_constraints?: string;
+  strategic_axes?: string[];
+  sector?: string;
+  sector_context?: string;
   status: 'draft' | 'ready_for_payment' | 'paid' | 'generated';
   guideline_json?: Guideline;
 }
 
 export interface GuidelinePhase {
   title: string;
-  period_label: string;      // ex: "Semaines 1-2"
+  period_label: string;
   objectives: string[];
   actions: string[];
   deliverables: string[];
