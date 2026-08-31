@@ -114,19 +114,21 @@ Contraintes connues : ${mission.known_constraints ?? 'Aucune signalée'}
 Axes stratégiques prioritaires sélectionnés par le manager (à traiter en priorité et à structurer explicitement dans le plan) :
 ${axesText}
 
-Génère un plan d'action découpé en phases cohérentes avec la durée totale de la mission (par exemple 3 à 5 phases pour une mission de 90 jours, moins pour une mission courte). Le plan doit couvrir concrètement chacun des axes stratégiques listés ci-dessus, en plus des étapes classiques de prise de poste. Quand un contexte sectoriel est fourni ci-dessus, ancre certaines actions dans ces tendances réelles du marché plutôt que de rester générique. Pour chaque phase, donne : un titre, la période concernée, des objectifs, des actions concrètes (audit, consultation interne, rapport, directive, projet...), et les livrables attendus.
+Génère un plan d'action découpé en phases cohérentes avec la durée totale de la mission (par exemple 3 à 5 phases pour une mission de 90 jours, moins pour une mission courte). Le plan doit couvrir concrètement chacun des axes stratégiques listés ci-dessus, en plus des étapes classiques de prise de poste. Quand un contexte sectoriel est fourni ci-dessus, ancre certaines actions dans ces tendances réelles du marché plutôt que de rester générique. Pour chaque phase, donne : un titre, la période concernée, des objectifs, des actions concrètes (audit, consultation interne, rapport, directive, projet...), les livrables attendus, et 2 à 3 indicateurs de succès mesurables (KPIs) qui permettront de prouver que la phase a atteint son but. Identifie aussi 3 à 5 risques majeurs de la mission dans son ensemble (résistance au changement, dépendance à une personne clé, délai serré, budget contraint, etc.), formulés de façon concrète et actionnable pour une direction.
 
 Réponds UNIQUEMENT en JSON valide, sans texte autour, au format suivant :
 {
   "mission_title": "string",
   "summary": "string (3-4 lignes)",
+  "risks": ["string", "..."],
   "phases": [
     {
       "title": "string",
       "period_label": "string (ex: Semaines 1-2)",
       "objectives": ["string", "..."],
       "actions": ["string", "..."],
-      "deliverables": ["string", "..."]
+      "deliverables": ["string", "..."],
+      "kpis": ["string", "..."]
     }
   ]
 }`;
@@ -149,6 +151,7 @@ Réponds UNIQUEMENT en JSON valide, sans texte autour, au format suivant :
   const normalized: Guideline = {
     mission_title: raw.mission_title ?? `Guideline ${mission.target_function}`,
     summary: raw.summary ?? '',
+    risks: Array.isArray(raw.risks) ? raw.risks : [],
     phases: Array.isArray(raw.phases)
       ? raw.phases.map((p: any) => ({
           title: p.title ?? 'Phase',
@@ -156,6 +159,7 @@ Réponds UNIQUEMENT en JSON valide, sans texte autour, au format suivant :
           objectives: Array.isArray(p.objectives) ? p.objectives : [],
           actions: Array.isArray(p.actions) ? p.actions : [],
           deliverables: Array.isArray(p.deliverables) ? p.deliverables : [],
+          kpis: Array.isArray(p.kpis) ? p.kpis : [],
         }))
       : [],
   };
