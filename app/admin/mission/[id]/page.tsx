@@ -42,7 +42,15 @@ export default async function AdminMissionPage({
       <section className="company-summary">
         <h3>Synthèse entreprise (générée)</h3>
         <p>{mission.company_summary}</p>
+        {mission.sector && <p><strong>Secteur détecté :</strong> {mission.sector}</p>}
       </section>
+
+      {mission.sector_context && (
+        <section className="company-summary">
+          <h3>Contexte sectoriel (recherche web)</h3>
+          <p style={{ whiteSpace: 'pre-line', fontSize: 13 }}>{mission.sector_context}</p>
+        </section>
+      )}
 
       <section className="company-summary">
         <h3>Détails saisis par le manager</h3>
