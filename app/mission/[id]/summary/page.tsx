@@ -31,6 +31,9 @@ export default async function SummaryPage({ params }: { params: Promise<{ id: st
         <section className="company-summary">
           <h3>{mission.company_url}</h3>
           <p>{mission.company_summary}</p>
+          {mission.sector && (
+            <p className="sector-tag">🏷️ Secteur identifié : {mission.sector}</p>
+          )}
         </section>
 
         <section className="teaser">
