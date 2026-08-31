@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { summarizeCompany } from '@/lib/ai';
+import { summarizeCompany, detectSector, searchSectorContext } from '@/lib/ai';
 import { scrapeCompanySite } from '@/lib/scraper';
 
 // Création d'une mission (étape 1 du formulaire)
@@ -15,6 +15,12 @@ export async function POST(req: NextRequest) {
   const rawContent = await scrapeCompanySite(company_url);
   const company_summary = await summarizeCompany(company_url, rawContent);
 
+  // Enrichissement sectoriel : identifie le secteur puis cherche le contexte
+  // de marché réel (tendances 2026) — donne à l'IA une matière bien plus riche
+  // qu'un simple résumé du site pour générer la guideline.
+  const sector = await detectSector(company_summary);
+  const sector_context = sector ? await searchSectorContext(sector) : '';
+
   const { data, error } = await supabaseAdmin
     .from('missions')
     .insert({
@@ -23,6 +29,8 @@ export async function POST(req: NextRequest) {
       target_function,
       mission_description,
       mission_duration_days,
+      sector,
+      sector_context,
       status: 'draft',
     })
     .select()
