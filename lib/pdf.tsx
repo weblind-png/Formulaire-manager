@@ -12,8 +12,8 @@ function PdfDonut({ percentage, color, size = 72 }: { percentage: number; color:
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const pct = Math.max(0, Math.min(100, percentage));
-const arcLength = Math.max(0.01, Math.min(circumference - 0.01, circumference * (pct / 100)));
-const center = size / 2;
+  const arcLength = Math.max(0.01, Math.min(circumference - 0.01, circumference * (pct / 100)));
+  const center = size / 2;
 
   return (
     <View style={{ width: size, height: size, position: 'relative' }}>
@@ -52,6 +52,7 @@ const center = size / 2;
 const styles = StyleSheet.create({
   page: { padding: 40, fontSize: 10.5, fontFamily: 'Helvetica', color: '#1a1f2b' },
 
+  // Page de garde
   coverLogo: { width: 100, marginBottom: 28 },
   coverEyebrow: { fontSize: 10, color: GOLD, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 },
   coverTitle: { fontSize: 24, fontFamily: 'Helvetica-Bold', color: NAVY, marginBottom: 14, lineHeight: 1.3 },
@@ -61,6 +62,7 @@ const styles = StyleSheet.create({
   coverSummaryText: { fontSize: 11, lineHeight: 1.6 },
   coverFooter: { position: 'absolute', bottom: 40, left: 40, right: 40, fontSize: 8, color: MUTED, borderTopWidth: 1, borderTopColor: BORDER, paddingTop: 10 },
 
+  // Pages de contenu
   header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, borderBottomWidth: 1, borderBottomColor: BORDER, paddingBottom: 10 },
   headerTitle: { fontSize: 9, color: MUTED },
 
@@ -68,6 +70,7 @@ const styles = StyleSheet.create({
   phaseTitle: { fontSize: 14, fontFamily: 'Helvetica-Bold', color: NAVY, marginBottom: 2 },
   phasePeriod: { fontSize: 9, color: GOLD, textTransform: 'uppercase', letterSpacing: 0.5 },
 
+  // Page de synthèse visuelle (grille de camemberts, une par phase)
   overviewTitle: { fontSize: 18, fontFamily: 'Helvetica-Bold', color: NAVY, marginBottom: 4 },
   overviewSubtitle: { fontSize: 10, color: MUTED, marginBottom: 24 },
   overviewGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
@@ -81,6 +84,18 @@ const styles = StyleSheet.create({
   checkboxChecked: { backgroundColor: NAVY },
   itemText: { fontSize: 10, lineHeight: 1.4, flex: 1 },
   itemTextChecked: { color: MUTED, textDecoration: 'line-through' },
+
+  // Risques (page de garde)
+  risksBox: { marginTop: 16, padding: 16, backgroundColor: '#fdf6ea', borderRadius: 4, borderLeftWidth: 3, borderLeftColor: GOLD },
+  risksLabel: { fontSize: 9, color: GOLD, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5, fontFamily: 'Helvetica-Bold' },
+  riskItem: { flexDirection: 'row', marginBottom: 5 },
+  riskBullet: { fontSize: 10, color: GOLD, marginRight: 6 },
+  riskText: { fontSize: 10, lineHeight: 1.4, flex: 1 },
+
+  // KPIs (fin de page de phase)
+  kpiBox: { marginTop: 14, padding: 12, backgroundColor: '#f4f6f8', borderRadius: 4 },
+  kpiLabel: { fontSize: 9, color: NAVY, textTransform: 'uppercase', marginBottom: 6, letterSpacing: 0.5, fontFamily: 'Helvetica-Bold' },
+  kpiItem: { fontSize: 9.5, lineHeight: 1.5, marginBottom: 3 },
 
   pageNumber: { position: 'absolute', bottom: 24, right: 40, fontSize: 8, color: MUTED },
 });
@@ -113,6 +128,7 @@ export function GuidelinePdf({ mission, guideline }: { mission: Mission & { prog
 
   return (
     <Document title={guideline.mission_title} author="Iterium Partners">
+      {/* PAGE DE GARDE */}
       <Page size="A4" style={styles.page}>
         <Image
           style={styles.coverLogo}
@@ -129,11 +145,24 @@ export function GuidelinePdf({ mission, guideline }: { mission: Mission & { prog
           <Text style={styles.coverSummaryText}>{guideline.summary}</Text>
         </View>
 
+        {(guideline.risks ?? []).length > 0 && (
+          <View style={styles.risksBox}>
+            <Text style={styles.risksLabel}>Risques identifiés</Text>
+            {(guideline.risks ?? []).map((r, i) => (
+              <View key={i} style={styles.riskItem}>
+                <Text style={styles.riskBullet}>⚠</Text>
+                <Text style={styles.riskText}>{r}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
         <View style={styles.coverFooter}>
           <Text>Document confidentiel — préparé pour un usage interne dans le cadre de la mission de transition.</Text>
         </View>
       </Page>
 
+      {/* PAGE DE SYNTHÈSE VISUELLE — un camembert par phase, pour une lecture en un coup d'œil */}
       {phases.length > 0 && (
         <Page size="A4" style={styles.page}>
           <Text style={styles.overviewTitle}>Avancement par phase</Text>
@@ -155,6 +184,7 @@ export function GuidelinePdf({ mission, guideline }: { mission: Mission & { prog
         </Page>
       )}
 
+      {/* PAGES DE DÉTAIL PAR PHASE */}
       {phases.map((phase, pIndex) => {
         const pct = getPhaseCompletion(phase, pIndex, progress);
         const color = PHASE_COLORS[pIndex % PHASE_COLORS.length];
@@ -187,6 +217,15 @@ export function GuidelinePdf({ mission, guideline }: { mission: Mission & { prog
             {(phase.deliverables ?? []).map((d, i) => (
               <ChecklistItem key={i} label={d} checked={!!progress[`p${pIndex}-d${i}`]} />
             ))}
+
+            {(phase.kpis ?? []).length > 0 && (
+              <View style={styles.kpiBox}>
+                <Text style={styles.kpiLabel}>Indicateurs de succès (KPIs)</Text>
+                {(phase.kpis ?? []).map((k, i) => (
+                  <Text key={i} style={styles.kpiItem}>📊 {k}</Text>
+                ))}
+              </View>
+            )}
 
             <Text
               style={styles.pageNumber}
