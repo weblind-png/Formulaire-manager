@@ -24,10 +24,12 @@ export interface GuidelinePhase {
   objectives: string[];
   actions: string[];
   deliverables: string[];
+  kpis: string[];
 }
 
 export interface Guideline {
   mission_title: string;
   summary: string;
+  risks: string[];
   phases: GuidelinePhase[];
 }
