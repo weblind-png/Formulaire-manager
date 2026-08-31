@@ -11,7 +11,7 @@ interface Props {
   guideline: Guideline;
   initialProgress: ProgressMap;
   missionDurationDays: number;
-  startedAt: string;
+  startedAt: string; // paid_at ou created_at — date de départ de la mission
 }
 
 export default function InteractiveGuideline({
@@ -23,6 +23,7 @@ export default function InteractiveGuideline({
 }: Props) {
   const [progress, setProgress] = useState<ProgressMap>(initialProgress ?? {});
 
+  // Construit la liste complète des items cochables, chacun avec une clé stable
   const items = useMemo(() => {
     const list: { key: string; label: string; phaseIndex: number; type: string }[] = [];
     (guideline.phases ?? []).forEach((phase, pIndex) => {
@@ -37,6 +38,7 @@ export default function InteractiveGuideline({
   const checkedCount = items.filter((it) => progress[it.key]).length;
   const completionPct = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
 
+  // % du délai de mission déjà écoulé
   const elapsedPct = useMemo(() => {
     const start = new Date(startedAt).getTime();
     const now = Date.now();
@@ -45,15 +47,20 @@ export default function InteractiveGuideline({
     return Math.min(100, Math.round((elapsedMs / totalMs) * 100));
   }, [startedAt, missionDurationDays]);
 
-  const gap = completionPct - elapsedPct;
+  const gap = completionPct - elapsedPct; // positif = en avance, négatif = en retard
 
+  // Ratio de "respect du délai" : où en est l'avancement des tâches par rapport
+  // à ce qui serait attendu au temps écoulé. 100% = parfaitement dans les clous.
+  // Le plancher de 1 point évite un saut brutal à 100% quand la mission vient
+  // tout juste de démarrer (elapsedPct proche de 0) — le ratio reste continu
+  // et suit fidèlement chaque case cochée/décochée.
   const respectPct = Math.min(100, Math.round((completionPct / Math.max(elapsedPct, 1)) * 100));
 
   const respectColor = respectPct >= 90 ? '#1f7a3f' : respectPct >= 60 ? 'var(--gold)' : '#b3261e';
 
   async function toggleItem(key: string) {
     const next = !progress[key];
-    setProgress((p) => ({ ...p, [key]: next }));
+    setProgress((p) => ({ ...p, [key]: next })); // optimiste
 
     try {
       await fetch('/api/mission/progress', {
@@ -62,11 +69,12 @@ export default function InteractiveGuideline({
         body: JSON.stringify({ missionId, itemKey: key, checked: next }),
       });
     } catch {
-      setProgress((p) => ({ ...p, [key]: !next }));
+      setProgress((p) => ({ ...p, [key]: !next })); // rollback si échec
     }
   }
 
   const statusLabel = gap >= 5 ? 'En avance' : gap <= -5 ? 'En retard' : 'Dans les temps';
+  const statusClass = gap >= 5 ? 'status-ahead' : gap <= -5 ? 'status-behind' : 'status-ontrack';
 
   return (
     <div>
@@ -85,14 +93,31 @@ export default function InteractiveGuideline({
         />
       </div>
 
+      {(guideline.risks ?? []).length > 0 && (
+        <div className="risks-box">
+          <h4>⚠️ Risques identifiés</h4>
+          <ul className="risks-list">
+            {(guideline.risks ?? []).map((r, i) => <li key={i}>{r}</li>)}
+          </ul>
+        </div>
+      )}
+
       {(guideline.phases ?? []).map((phase, pIndex) => {
         const phaseItems = items.filter((it) => it.phaseIndex === pIndex);
         const phaseChecked = phaseItems.filter((it) => progress[it.key]).length;
+        const phasePct = phaseItems.length > 0 ? Math.round((phaseChecked / phaseItems.length) * 100) : 0;
 
         return (
           <section key={pIndex} className="phase-card">
-            <h2>{phase.period_label} — {phase.title}</h2>
-            <p className="phase-progress">{phaseChecked} / {phaseItems.length} validés</p>
+            <div className="phase-header">
+              <DonutChart
+                percentage={phasePct}
+                color="var(--navy)"
+                label={phase.title}
+                sublabel={`${phase.period_label} · ${phaseChecked}/${phaseItems.length} validés`}
+                size={64}
+              />
+            </div>
 
             {['Objectif', 'Action', 'Livrable'].map((type) => {
               const typeItems = phaseItems.filter((it) => it.type === type);
@@ -117,6 +142,15 @@ export default function InteractiveGuideline({
                 </div>
               );
             })}
+
+            {(phase.kpis ?? []).length > 0 && (
+              <div className="kpi-box">
+                <h4>📊 Indicateurs de succès</h4>
+                <ul className="kpi-list">
+                  {(phase.kpis ?? []).map((k, i) => <li key={i}>{k}</li>)}
+                </ul>
+              </div>
+            )}
           </section>
         );
       })}
