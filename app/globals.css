@@ -297,3 +297,22 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   text-decoration: line-through;
   color: var(--muted);
 }
+
+.risks-box {
+  background: #fdf6ea;
+  border-left: 3px solid var(--gold);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+.risks-box h4 { margin: 0 0 8px; font-size: 14px; }
+.risks-list { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.6; }
+
+.kpi-box {
+  background: #f4f6f8;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-top: 14px;
+}
+.kpi-box h4 { margin: 0 0 8px; font-size: 13px; color: var(--navy); }
+.kpi-list { margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.6; color: var(--ink); }
