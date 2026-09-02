@@ -47,14 +47,16 @@ export default function InteractiveGuideline({
     return Math.min(100, Math.round((elapsedMs / totalMs) * 100));
   }, [startedAt, missionDurationDays]);
 
-  const gap = completionPct - elapsedPct; // positif = en avance, négatif = en retard
+    const gap = completionPct - elapsedPct; // positif = en avance, négatif = en retard
 
-  // Ratio de "respect du délai" : où en est l'avancement des tâches par rapport
-  // à ce qui serait attendu au temps écoulé. 100% = parfaitement dans les clous.
-  // Le plancher de 1 point évite un saut brutal à 100% quand la mission vient
-  // tout juste de démarrer (elapsedPct proche de 0) — le ratio reste continu
-  // et suit fidèlement chaque case cochée/décochée.
-  const respectPct = Math.min(100, Math.round((completionPct / Math.max(elapsedPct, 1)) * 100));
+  // Ratio de "respect du délai" : pénalise uniquement le retard réel (temps écoulé
+  // au-delà de ce qui est fait), sans jamais diviser par le temps écoulé — c'est
+  // ce qui causait un saut immédiat à 100% dès la première case cochée en tout
+  // début de mission (division par un temps écoulé quasi nul). Ici, tant que rien
+  // n'est encore "dû" (début de mission), le score reste stable à 100 qu'on ait
+  // coché 0 ou 1 case ; il ne redescend que si le retard réel s'installe avec le temps.
+  const deficit = Math.max(0, elapsedPct - completionPct);
+  const respectPct = Math.max(0, Math.min(100, 100 - deficit));
 
   const respectColor = respectPct >= 90 ? '#1f7a3f' : respectPct >= 60 ? 'var(--gold)' : '#b3261e';
 
