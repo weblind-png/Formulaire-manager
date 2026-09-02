@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import PayButton from '@/components/PayButton';
+import HeroBanner from '@/components/HeroBanner';
 import { redirect } from 'next/navigation';
 
 export default async function SummaryPage({ params }: { params: Promise<{ id: string }> }) {
@@ -22,14 +23,10 @@ export default async function SummaryPage({ params }: { params: Promise<{ id: st
 
   return (
     <>
-      <section className="hero">
-        <div className="hero-inner">
-          <h1>Votre synthèse de mission</h1>
-        </div>
-      </section>
+      <HeroBanner title="Votre synthèse de mission" />
       <main className="page-body">
         <section className="company-summary">
-          <h3>{mission.company_url}</h3>
+          <h3>{mission.company_name || mission.company_url}</h3>
           <p>{mission.company_summary}</p>
           {mission.sector && (
             <p className="sector-tag">🏷️ Secteur identifié : {mission.sector}</p>
