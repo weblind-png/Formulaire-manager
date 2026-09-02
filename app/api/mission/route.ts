@@ -6,7 +6,7 @@ import { scrapeCompanySite } from '@/lib/scraper';
 // Création d'une mission (étape 1 du formulaire)
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { company_url, target_function, mission_description, mission_duration_days } = body;
+  const { company_url, company_name, manager_name, target_function, mission_description, mission_duration_days } = body;
 
   if (!company_url || !target_function || !mission_description || !mission_duration_days) {
     return NextResponse.json({ error: 'Champs obligatoires manquants' }, { status: 400 });
@@ -25,6 +25,8 @@ export async function POST(req: NextRequest) {
     .from('missions')
     .insert({
       company_url,
+      company_name,
+      manager_name,
       company_summary,
       target_function,
       mission_description,
