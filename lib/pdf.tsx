@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet, Image, Svg, Circle } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Svg, Circle } from '@react-pdf/renderer';
 import type { Mission, Guideline } from './types';
 
 const NAVY = '#0b2545';
@@ -53,11 +53,14 @@ const styles = StyleSheet.create({
   page: { padding: 40, fontSize: 10.5, fontFamily: 'Helvetica', color: '#1a1f2b' },
 
   // Page de garde
-  coverLogo: { width: 100, marginBottom: 28 },
+  coverBrandBar: { height: 6, backgroundColor: NAVY, marginBottom: 28, borderRadius: 2 },
   coverEyebrow: { fontSize: 10, color: GOLD, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 },
-  coverTitle: { fontSize: 24, fontFamily: 'Helvetica-Bold', color: NAVY, marginBottom: 14, lineHeight: 1.3 },
-  coverMeta: { fontSize: 11, color: MUTED, marginBottom: 4 },
-  coverSummaryBox: { marginTop: 28, padding: 16, backgroundColor: '#f4f6f8', borderRadius: 4 },
+  coverTitle: { fontSize: 24, fontFamily: 'Helvetica-Bold', color: NAVY, marginBottom: 18, lineHeight: 1.3 },
+  identityBox: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 8, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: BORDER },
+  identityItem: { width: '50%', marginBottom: 10 },
+  identityLabel: { fontSize: 8, color: MUTED, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
+  identityValue: { fontSize: 11, fontFamily: 'Helvetica-Bold', color: '#1a1f2b' },
+  coverSummaryBox: { marginTop: 20, padding: 16, backgroundColor: '#f4f6f8', borderRadius: 4 },
   coverSummaryLabel: { fontSize: 9, color: MUTED, textTransform: 'uppercase', marginBottom: 6, letterSpacing: 0.5 },
   coverSummaryText: { fontSize: 11, lineHeight: 1.6 },
   coverFooter: { position: 'absolute', bottom: 40, left: 40, right: 40, fontSize: 8, color: MUTED, borderTopWidth: 1, borderTopColor: BORDER, paddingTop: 10 },
@@ -124,21 +127,40 @@ function getPhaseCompletion(phase: any, pIndex: number, progress: Record<string,
 export function GuidelinePdf({ mission, guideline }: { mission: Mission & { progress_json?: Record<string, boolean> }; guideline: Guideline }) {
   const progress = mission.progress_json ?? {};
   const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const startDate = new Date(mission.paid_at ?? mission.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   const phases = guideline.phases ?? [];
+  const clientLabel = mission.company_name || mission.company_url;
 
   return (
-    <Document title={guideline.mission_title} author="Iterium Partners">
+    <Document title={guideline.mission_title} author={mission.manager_name || 'Manager de transition'}>
       {/* PAGE DE GARDE */}
       <Page size="A4" style={styles.page}>
-        <Image
-          style={styles.coverLogo}
-          src="https://res.cloudinary.com/dlo1bbmlf/image/upload/v1777481790/logiIP_fzrayp.png"
-        />
+        <View style={styles.coverBrandBar} />
         <Text style={styles.coverEyebrow}>Guideline de mission — {mission.target_function}</Text>
         <Text style={styles.coverTitle}>{guideline.mission_title}</Text>
-        <Text style={styles.coverMeta}>Entreprise cible : {mission.company_url}</Text>
-        <Text style={styles.coverMeta}>Durée de mission : {mission.mission_duration_days} jours</Text>
-        <Text style={styles.coverMeta}>Document généré le {today}</Text>
+
+        <View style={styles.identityBox}>
+          <View style={styles.identityItem}>
+            <Text style={styles.identityLabel}>Client</Text>
+            <Text style={styles.identityValue}>{clientLabel}</Text>
+          </View>
+          <View style={styles.identityItem}>
+            <Text style={styles.identityLabel}>Manager de transition</Text>
+            <Text style={styles.identityValue}>{mission.manager_name || 'Non renseigné'}</Text>
+          </View>
+          <View style={styles.identityItem}>
+            <Text style={styles.identityLabel}>Début de mission</Text>
+            <Text style={styles.identityValue}>{startDate}</Text>
+          </View>
+          <View style={styles.identityItem}>
+            <Text style={styles.identityLabel}>Durée prévue</Text>
+            <Text style={styles.identityValue}>{mission.mission_duration_days} jours</Text>
+          </View>
+          <View style={styles.identityItem}>
+            <Text style={styles.identityLabel}>Document mis à jour le</Text>
+            <Text style={styles.identityValue}>{today}</Text>
+          </View>
+        </View>
 
         <View style={styles.coverSummaryBox}>
           <Text style={styles.coverSummaryLabel}>Synthèse exécutive</Text>
@@ -191,7 +213,7 @@ export function GuidelinePdf({ mission, guideline }: { mission: Mission & { prog
         return (
           <Page key={pIndex} size="A4" style={styles.page}>
             <View style={styles.header} fixed>
-              <Text style={styles.headerTitle}>{guideline.mission_title}</Text>
+              <Text style={styles.headerTitle}>{clientLabel} · {guideline.mission_title}</Text>
               <Text style={styles.headerTitle}>{mission.target_function}</Text>
             </View>
 
