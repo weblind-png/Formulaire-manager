@@ -2,7 +2,11 @@ export type TargetFunction = 'CIO' | 'DSI' | 'DG' | 'DAF' | 'DRH';
 
 export interface Mission {
   id: string;
+  created_at: string;
+  paid_at?: string | null;
   company_url: string;
+  company_name?: string;
+  manager_name?: string;
   company_summary?: string;
   target_function: TargetFunction;
   mission_description: string;
