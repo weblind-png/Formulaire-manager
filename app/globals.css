@@ -20,56 +20,48 @@ body {
   line-height: 1.5;
 }
 
-.site-header {
-  background: var(--navy);
-  padding: 20px 24px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.site-header img {
-  height: 64px;
-  width: auto;
-}
-
-.site-header span {
-  color: white;
-  font-weight: 700;
-  font-size: 17px;
-  letter-spacing: 0.02em;
-}
-
-.hero {
-  background: linear-gradient(90deg, rgba(7,26,51,0.88) 0%, rgba(7,26,51,0.65) 55%, rgba(7,26,51,0.4) 100%), url('https://res.cloudinary.com/dlo1bbmlf/image/upload/v1784651189/baniere_Iterium_PARTNERS_tle2ua.png');
+.hero-band {
+  position: relative;
+  height: 220px;
+  background: linear-gradient(rgba(7,26,51,0.15), rgba(7,26,51,0.35)), url('https://res.cloudinary.com/dlo1bbmlf/image/upload/v1784651189/baniere_Iterium_PARTNERS_tle2ua.png');
   background-size: cover;
-  background-position: center;
-  aspect-ratio: 1847 / 700;
-  display: flex;
-  align-items: center;
-  padding: 0 24px;
-  color: white;
+  background-position: center 30%;
 }
-
 @media (max-width: 700px) {
-  .hero { aspect-ratio: 1847 / 1100; }
+  .hero-band { height: 150px; }
 }
 
-.hero-inner {
+.brand-badge {
+  position: absolute;
+  bottom: -32px;
+  left: 24px;
+  background: white;
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 14px rgba(11,37,69,0.18);
+}
+.brand-badge img {
+  height: 44px;
+  width: auto;
+  display: block;
+}
+
+.hero-content {
+  background: white;
+  padding: 52px 24px 32px;
+  border-bottom: 1px solid var(--border);
+}
+.hero-content h1 {
+  max-width: 720px;
+  margin: 0 auto 12px;
+  font-size: 28px;
+  color: var(--navy);
+}
+.hero-content p {
   max-width: 720px;
   margin: 0 auto;
-}
-
-.hero h1 {
-  color: white;
-  font-size: 32px;
-  margin: 0 0 12px;
-}
-
-.hero p {
-  color: #d7dfe9;
-  font-size: 16px;
-  max-width: 560px;
+  font-size: 15px;
+  color: var(--muted);
 }
 
 .page-body {
