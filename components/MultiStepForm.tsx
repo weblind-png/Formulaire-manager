@@ -13,6 +13,39 @@ const ENTRY_CONTEXTS = [
   'Cession / fusion',
 ];
 
+const STRATEGIC_AXES: Record<string, string[]> = {
+  CIO: [
+    'Définition de la stratégie IT globale',
+    'Gouvernance SI & architecture d\u2019entreprise',
+    'Cybersécurité et gestion des risques SI',
+    'Pilotage du budget IT et rationalisation',
+  ],
+  DSI: [
+    'Cadrage & roadmap SI/DSI',
+    'Migration cloud, refonte d\u2019infrastructure',
+    'Pilotage du déploiement d\u2019un ERP/CRM',
+    'Reprise en main de projets en dérive',
+  ],
+  DG: [
+    'Redressement d\u2019entreprise / turnaround',
+    'Pilotage d\u2019une fusion-acquisition',
+    'Redéfinition de la stratégie et du business plan',
+    'Gestion d\u2019une transition de direction',
+  ],
+  DAF: [
+    'Optimisation du BFR',
+    'Audit et fiabilisation des comptes',
+    'Gestion de crise financière & restructuration de dette',
+    'Fiabilisation du contrôle de gestion et du reporting',
+  ],
+  DRH: [
+    'Gestion de crise sociale',
+    'Accompagnement d\u2019un plan de sauvegarde de l\u2019emploi (PSE)',
+    'Recrutement d\u2019urgence & marque employeur',
+    'Refonte de l\u2019organisation et des processus RH',
+  ],
+};
+
 export default function MultiStepForm() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -22,6 +55,8 @@ export default function MultiStepForm() {
 
   const [form, setForm] = useState({
     company_url: '',
+    company_name: '',
+    manager_name: '',
     target_function: '' as typeof FUNCTIONS[number] | '',
     mission_description: '',
     mission_duration_days: 90,
@@ -29,10 +64,19 @@ export default function MultiStepForm() {
     sponsor_mandate: '',
     team_size: '',
     known_constraints: '',
+    strategic_axes: [] as string[],
   });
 
   const update = (field: string, value: string | number) =>
     setForm((f) => ({ ...f, [field]: value }));
+
+  const toggleAxis = (axis: string) =>
+    setForm((f) => ({
+      ...f,
+      strategic_axes: f.strategic_axes.includes(axis)
+        ? f.strategic_axes.filter((a) => a !== axis)
+        : [...f.strategic_axes, axis],
+    }));
 
   // Étape 1 : crée la mission dès que l'URL + le premier bloc sont saisis
   async function submitStepOne() {
@@ -77,6 +121,7 @@ export default function MultiStepForm() {
           sponsor_mandate: form.sponsor_mandate,
           team_size: form.team_size ? Number(form.team_size) : null,
           known_constraints: form.known_constraints,
+          strategic_axes: form.strategic_axes,
         }),
       });
 
@@ -101,12 +146,32 @@ export default function MultiStepForm() {
         <div className="form-step">
           <h2>Votre mission en un coup d'œil</h2>
           <label>
+            Nom de l'entreprise cliente
+            <input
+              type="text"
+              placeholder="Ex : Groupe Dupont Industries"
+              value={form.company_name}
+              onChange={(e) => update('company_name', e.target.value)}
+            />
+          </label>
+
+          <label>
             Site de l'entreprise cible
             <input
               type="url"
               placeholder="https://..."
               value={form.company_url}
               onChange={(e) => update('company_url', e.target.value)}
+            />
+          </label>
+
+          <label>
+            Votre nom
+            <input
+              type="text"
+              placeholder="Ex : Jean Dupont"
+              value={form.manager_name}
+              onChange={(e) => update('manager_name', e.target.value)}
             />
           </label>
 
@@ -156,6 +221,29 @@ export default function MultiStepForm() {
       {step === 2 && (
         <div className="form-step">
           <h2>Affinons le contexte</h2>
+
+          {STRATEGIC_AXES[form.target_function]?.length > 0 && (
+            <div className="axes-block">
+              <label style={{ marginBottom: 8 }}>
+                Quels sont vos axes stratégiques ? ({form.target_function})
+              </label>
+              <ul className="checklist">
+                {STRATEGIC_AXES[form.target_function].map((axis) => (
+                  <li key={axis}>
+                    <label className="checklist-item">
+                      <input
+                        type="checkbox"
+                        checked={form.strategic_axes.includes(axis)}
+                        onChange={() => toggleAxis(axis)}
+                      />
+                      <span>{axis}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <label>
             Contexte d'entrée
             <select
