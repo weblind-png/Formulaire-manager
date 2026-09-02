@@ -1,18 +1,13 @@
 import MultiStepForm from '@/components/MultiStepForm';
+import HeroBanner from '@/components/HeroBanner';
 
 export default function HomePage() {
   return (
     <>
-      <section className="hero">
-        <div className="hero-inner">
-          <h1>Votre plan d'action de mission, en 5 minutes</h1>
-          <p>
-            Renseignez l'entreprise et la mission attendue. Nous générons votre guideline
-            step-by-step — audit, consultations, rapports, directives — calée sur la durée
-            réelle de votre mission.
-          </p>
-        </div>
-      </section>
+      <HeroBanner
+        title="Votre plan d'action de mission, en 5 minutes"
+        subtitle="Renseignez l'entreprise et la mission attendue. Nous générons votre guideline step-by-step — audit, consultations, rapports, directives — calée sur la durée réelle de votre mission."
+      />
       <main className="page-body">
         <MultiStepForm />
       </main>
