@@ -8,19 +8,62 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
 const MODEL = 'openai/gpt-oss-120b';
 
 /**
- * Résume le site de l'entreprise cible (étape 1 du formulaire).
- * `rawContent` = texte déjà extrait du site par votre étape de scraping.
+ * Recherche web générale sur l'entreprise (au-delà de son seul site) — sert de
+ * complément quand le scraping réussit, et de filet de sécurité quand un site
+ * bloque le scraping (JS, protection anti-bot, etc.).
  */
-export async function summarizeCompany(companyUrl: string, rawContent: string): Promise<string> {
-  if (!rawContent || rawContent.trim().length < 50) {
-    return `Synthèse non disponible : le contenu du site ${companyUrl} n'a pas pu être récupéré automatiquement (site protégé contre le scraping, contenu généré en JavaScript, ou site inaccessible). Le manager peut renseigner manuellement le contexte de l'entreprise.`;
+export async function searchCompanyContext(companyLabel: string): Promise<string> {
+  if (!process.env.TAVILY_API_KEY || !companyLabel) return '';
+
+  try {
+    const res = await fetch('https://api.tavily.com/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        api_key: process.env.TAVILY_API_KEY,
+        query: `${companyLabel} entreprise activité chiffre d'affaires actualité récente`,
+        search_depth: 'basic',
+        max_results: 4,
+      }),
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!res.ok) return '';
+    const data = await res.json();
+    const results = data.results ?? [];
+
+    return results
+      .map((r: any) => `- ${r.title} : ${(r.content ?? '').slice(0, 300)}`)
+      .join('\n');
+  } catch (err) {
+    console.error('Erreur de recherche entreprise', err);
+    return '';
   }
+}
+
+/**
+ * Résume l'entreprise cible (étape 1 du formulaire) en combinant deux sources :
+ * `rawContent` (scraping du site) et `webContext` (recherche web générale) — la
+ * seconde comble les trous quand le site bloque le scraping ou est trop pauvre.
+ */
+export async function summarizeCompany(companyUrl: string, rawContent: string, webContext: string = ''): Promise<string> {
+  const hasSiteContent = rawContent && rawContent.trim().length >= 50;
+  const hasWebContext = webContext && webContext.trim().length >= 30;
+
+  if (!hasSiteContent && !hasWebContext) {
+    return `Synthèse non disponible : ni le site ${companyUrl} ni une recherche web complémentaire n'ont permis de récupérer d'informations exploitables. Le manager peut renseigner manuellement le contexte de l'entreprise.`;
+  }
+
+  const sourcesText = [
+    hasSiteContent ? `Contenu extrait du site ${companyUrl} :\n${rawContent}` : '',
+    hasWebContext ? `Résultats d'une recherche web sur l'entreprise :\n${webContext}` : '',
+  ].filter(Boolean).join('\n\n---\n\n');
 
   const completion = await groq.chat.completions.create({
     model: MODEL,
     messages: [{
       role: 'user',
-      content: `Voici le contenu extrait du site ${companyUrl} :\n\n${rawContent}\n\nRédige une synthèse factuelle en 6-8 lignes maximum à destination d'un manager de transition qui doit prendre ses fonctions rapidement dans cette entreprise : activité, taille approximative, positionnement marché, signaux notables (croissance, tensions, actualité récente). Base-toi UNIQUEMENT sur le contenu fourni ci-dessus, sans jamais indiquer que tu ne peux pas accéder à un lien — le contenu t'a déjà été fourni en texte. Pas de style commercial, uniquement des faits utiles.`
+      content: `Voici les informations disponibles sur une entreprise :\n\n${sourcesText}\n\nRédige une synthèse factuelle en 6-8 lignes maximum à destination d'un manager de transition qui doit prendre ses fonctions rapidement dans cette entreprise : activité, taille approximative, positionnement marché, signaux notables (croissance, tensions, actualité récente). Combine les sources disponibles ci-dessus sans jamais indiquer que tu ne peux pas accéder à un lien — le contenu t'a déjà été fourni en texte. Pas de style commercial, uniquement des faits utiles.`
     }],
     max_tokens: 600,
   });
