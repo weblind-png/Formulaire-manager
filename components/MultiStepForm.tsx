@@ -1,7 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (el: HTMLElement, opts: Record<string, any>) => string;
+      reset: (id?: string) => void;
+    };
+  }
+}
 
 const FUNCTIONS = ['CIO', 'DSI', 'DG', 'DAF', 'DRH'] as const;
 const DURATIONS = [30, 60, 90, 180];
@@ -52,6 +61,37 @@ export default function MultiStepForm() {
   const [missionId, setMissionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
+
+  // Charge le script Turnstile une fois, puis affiche le widget dans l'étape 1
+  useEffect(() => {
+    if (document.getElementById('turnstile-script')) return;
+    const script = document.createElement('script');
+    script.id = 'turnstile-script';
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
+  useEffect(() => {
+    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+    if (!siteKey || !captchaRef.current || widgetIdRef.current) return;
+
+    const interval = setInterval(() => {
+      if (window.turnstile && captchaRef.current && !widgetIdRef.current) {
+        widgetIdRef.current = window.turnstile.render(captchaRef.current, {
+          sitekey: siteKey,
+          callback: (token: string) => setCaptchaToken(token),
+          'expired-callback': () => setCaptchaToken(null),
+        });
+        clearInterval(interval);
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const [form, setForm] = useState({
     company_url: '',
@@ -86,7 +126,7 @@ export default function MultiStepForm() {
       const res = await fetch('/api/mission', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, captchaToken }),
       });
 
       if (!res.ok) {
@@ -209,8 +249,10 @@ export default function MultiStepForm() {
             </select>
           </label>
 
+          <div ref={captchaRef} style={{ marginBottom: 16 }} />
+
           <button
-            disabled={loading || !form.company_url || !form.target_function || !form.mission_description}
+            disabled={loading || !form.company_url || !form.target_function || !form.mission_description || (!!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !captchaToken)}
             onClick={submitStepOne}
           >
             {loading ? 'Analyse en cours...' : 'Continuer'}
