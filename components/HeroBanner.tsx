@@ -6,6 +6,7 @@ export default function HeroBanner({ title, subtitle }: { title: string; subtitl
       <div className="hero-band">
         <div className="brand-badge">
           <SiteLogo />
+          <span className="brand-caption">Créé par ITERIUM PARTNERS</span>
         </div>
       </div>
       <div className="hero-content">
