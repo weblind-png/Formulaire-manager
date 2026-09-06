@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     line_items: [{ price: process.env.PRICE_GUIDELINE!, quantity: 1 }],
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/mission/${missionId}/guideline?paid=1`,
+    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/mission/${missionId}/guideline?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/mission/${missionId}/summary`,
     // Le lien entre la session Stripe et la mission se fait ici, pas côté front
     metadata: { missionId },
