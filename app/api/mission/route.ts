@@ -2,11 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { summarizeCompany, detectSector, searchSectorContext, searchCompanyContext } from '@/lib/ai';
 import { scrapeCompanySite } from '@/lib/scraper';
+import { createSupabaseServerClient } from '@/lib/supabase-server';
 
 // Vérifie le token Turnstile côté serveur — c'est la vraie protection, jamais
 // le blocage du bouton côté client seul (un bot appelle l'API directement).
-// Si TURNSTILE_SECRET_KEY n'est pas configurée, la vérification est ignorée
-// (permet de développer/tester sans avoir configuré le captcha).
 async function verifyCaptcha(token: string | undefined, ip: string | null): Promise<boolean> {
   if (!process.env.TURNSTILE_SECRET_KEY) return true;
   if (!token) return false;
@@ -28,8 +27,14 @@ async function verifyCaptcha(token: string | undefined, ip: string | null): Prom
   }
 }
 
-// Création d'une mission (étape 1 du formulaire)
+// Création d'une mission (étape 1 du formulaire) — nécessite un compte connecté
 export async function POST(req: NextRequest) {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Vous devez être connecté pour créer une mission.' }, { status: 401 });
+  }
+
   const body = await req.json();
   const { company_url, company_name, manager_name, target_function, mission_description, mission_duration_days, captchaToken } = body;
 
@@ -45,8 +50,6 @@ export async function POST(req: NextRequest) {
 
   const rawContent = await scrapeCompanySite(company_url);
 
-  // Recherche web générale sur l'entreprise (nom si fourni, sinon domaine extrait
-  // de l'URL) — comble les trous quand le site bloque le scraping (JS, anti-bot).
   let companyLabel = company_name;
   if (!companyLabel) {
     try { companyLabel = new URL(company_url).hostname.replace('www.', ''); } catch { companyLabel = company_url; }
@@ -55,18 +58,16 @@ export async function POST(req: NextRequest) {
 
   const company_summary = await summarizeCompany(company_url, rawContent, webContext);
 
-  // Enrichissement sectoriel : identifie le secteur puis cherche le contexte
-  // de marché réel (tendances 2026) — donne à l'IA une matière bien plus riche
-  // qu'un simple résumé du site pour générer la guideline.
   const sector = await detectSector(company_summary);
   const sector_context = sector ? await searchSectorContext(sector) : '';
 
   const { data, error } = await supabaseAdmin
     .from('missions')
     .insert({
+      user_id: user.id,
       company_url,
       company_name,
-      manager_name,
+      manager_name: manager_name || user.email,
       company_summary,
       target_function,
       mission_description,
