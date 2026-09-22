@@ -9,7 +9,7 @@ export default function LoginPage() {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
 
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,16 +30,31 @@ export default function LoginPage() {
       return;
     }
 
+    if (mode === 'forgot') {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      setLoading(false);
+      if (error) return setError(error.message);
+      setInfo('Si un compte existe avec cet email, un lien de réinitialisation vient de vous être envoyé.');
+      setMode('login');
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) return setError('Email ou mot de passe incorrect.');
+    // On affiche le vrai message Supabase (ex: "Email not confirmed") plutôt
+    // qu'un message générique — indispensable pour diagnostiquer les blocages.
+    if (error) return setError(error.message);
     router.push('/');
     router.refresh();
   }
 
+  const titles = { login: 'Connexion', signup: 'Créer votre compte', forgot: 'Mot de passe oublié' };
+
   return (
     <>
-      <HeroBanner title={mode === 'login' ? 'Connexion' : 'Créer votre compte'} />
+      <HeroBanner title={titles[mode]} />
       <main className="page-body">
         <div className="form-card" style={{ maxWidth: 420, margin: '0 auto' }}>
           {error && <p className="form-error">⚠️ {error}</p>}
@@ -49,20 +64,40 @@ export default function LoginPage() {
             Email
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </label>
-          <label>
-            Mot de passe
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-          </label>
 
-          <button disabled={loading || !email || !password} onClick={handleSubmit}>
-            {loading ? 'Patientez...' : mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
+          {mode !== 'forgot' && (
+            <label>
+              Mot de passe
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            </label>
+          )}
+
+          <button
+            disabled={loading || !email || (mode !== 'forgot' && !password)}
+            onClick={handleSubmit}
+          >
+            {loading
+              ? 'Patientez...'
+              : mode === 'login' ? 'Se connecter'
+              : mode === 'signup' ? 'Créer mon compte'
+              : 'Envoyer le lien de réinitialisation'}
           </button>
 
           <p className="auth-switch">
-            {mode === 'login' ? (
-              <>Pas encore de compte ? <a onClick={() => setMode('signup')}>Créer un compte</a></>
-            ) : (
+            {mode === 'login' && (
+              <>
+                Pas encore de compte ? <a onClick={() => setMode('signup')}>Créer un compte</a>
+                <br />
+                <a onClick={() => setMode('forgot')}>Mot de passe oublié ?</a>
+              </>
+            )}
+            {mode === 'signup' && (
               <>Déjà un compte ? <a onClick={() => setMode('login')}>Se connecter</a></>
+            )}
+            {mode === 'forgot' && (
+              <>
+                <a onClick={() => setMode('login')}>← Retour à la connexion</a>
+              </>
             )}
           </p>
         </div>
