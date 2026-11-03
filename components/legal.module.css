@@ -1,1 +1,72 @@
+.footer {
+  border-top: 1px solid #dfe3e8;
+  background: #ffffff;
+  padding: 24px;
+  text-align: center;
+  font-size: 13px;
+  color: #5b6472;
+}
+.footerNav {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.footerNav a {
+  color: #0b2545;
+  text-decoration: none;
+  font-weight: 600;
+}
+.footerNav a:hover {
+  text-decoration: underline;
+}
+.footerCopy {
+  margin: 0;
+}
 
+.legal {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+  line-height: 1.7;
+  color: #1a1f2b;
+}
+.legal h1 {
+  font-size: 28px;
+  color: #0b2545;
+  margin: 0 0 8px;
+}
+.legal h2 {
+  font-size: 18px;
+  color: #0b2545;
+  margin: 32px 0 8px;
+}
+.legal p,
+.legal li {
+  font-size: 15px;
+}
+.legal ul {
+  padding-left: 20px;
+}
+.legal a {
+  color: #0b2545;
+}
+.legalMeta {
+  font-size: 13px;
+  color: #5b6472;
+  margin-bottom: 24px;
+}
+.back {
+  display: inline-block;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0b2545;
+  text-decoration: none;
+}
+.todo {
+  background: #fff4d6;
+  padding: 0 4px;
+  border-radius: 3px;
+}
