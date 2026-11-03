@@ -1,4 +1,5 @@
 import './globals.css';
+import SiteFooter from '@/components/SiteFooter';
 
 export const metadata = {
   title: 'Guideline Manager de Transition',
@@ -8,7 +9,12 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
-      <body>{children}</body>
+      <body>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1 }}>{children}</div>
+          <SiteFooter />
+        </div>
+      </body>
     </html>
   );
 }
