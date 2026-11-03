@@ -11,18 +11,24 @@ export default function SendEmailButton({ missionId, defaultEmail }: { missionId
     if (!email) return;
 
     setLoading(true);
-    const res = await fetch(`/api/mission/${missionId}/send-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
-    setLoading(false);
+    try {
+      const res = await fetch(`/api/mission/${missionId}/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json().catch(() => ({}));
 
-    if (res.ok) {
-      setSent(true);
-      setTimeout(() => setSent(false), 4000);
-    } else {
-      alert("Erreur lors de l'envoi. Réessayez plus tard.");
+      if (res.ok) {
+        setSent(true);
+        setTimeout(() => setSent(false), 4000);
+      } else {
+        alert(data.error || "Erreur lors de l'envoi. Réessayez plus tard.");
+      }
+    } catch {
+      alert('Erreur réseau. Réessayez.');
+    } finally {
+      setLoading(false);
     }
   }
 
