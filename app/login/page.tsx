@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -22,7 +23,13 @@ export default function LoginPage() {
     setInfo(null);
 
     if (mode === 'signup') {
-      const { error } = await supabase.auth.signUp({ email, password });
+      // Précise explicitement la destination du lien de confirmation, plutôt
+      // que de laisser Supabase utiliser le "Site URL" par défaut du projet.
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/login` },
+      });
       setLoading(false);
       if (error) return setError(error.message);
       setInfo('Compte créé ! Vérifiez votre boîte mail pour confirmer votre adresse, puis connectez-vous.');
@@ -43,8 +50,6 @@ export default function LoginPage() {
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    // On affiche le vrai message Supabase (ex: "Email not confirmed") plutôt
-    // qu'un message générique — indispensable pour diagnostiquer les blocages.
     if (error) return setError(error.message);
     router.push('/');
     router.refresh();
@@ -72,8 +77,19 @@ export default function LoginPage() {
             </label>
           )}
 
+          {mode === 'signup' && (
+            <label className="checklist-item" style={{ marginBottom: 16 }}>
+              <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} />
+              <span>
+                J'accepte les{' '}
+                <a href="/cgv" target="_blank" rel="noopener noreferrer">CGV / CGU</a> et la{' '}
+                <a href="/confidentialite" target="_blank" rel="noopener noreferrer">politique de confidentialité</a>.
+              </span>
+            </label>
+          )}
+
           <button
-            disabled={loading || !email || (mode !== 'forgot' && !password)}
+            disabled={loading || !email || (mode !== 'forgot' && !password) || (mode === 'signup' && !accepted)}
             onClick={handleSubmit}
           >
             {loading
@@ -105,3 +121,4 @@ export default function LoginPage() {
     </>
   );
 }
+
