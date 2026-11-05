@@ -84,7 +84,7 @@ export default function CgvPage() {
         concernée.
       </p>
 
-      <h2>8. Nature des guidelines et limites</h2>
+       <h2>8. Nature des guidelines et limites</h2>
       <p>L'utilisateur reconnaît que :</p>
       <ul>
         <li>
@@ -101,7 +101,8 @@ export default function CgvPage() {
           mission avant toute décision ou toute diffusion à un tiers ;
         </li>
         <li>
-          l'Éditeur ne peut être tenu responsable des décisions prises sur la base d'une guideline.
+          l'Éditeur ne peut être tenu responsable des décisions prises sur la base d'une
+          guideline, ni du résultat d'une mission, dont l'utilisateur reste seul responsable.
         </li>
       </ul>
 
